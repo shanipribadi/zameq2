@@ -1,6 +1,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include <string.h>
 
 #include "lv2/lv2plug.in/ns/lv2core/lv2.h"
@@ -141,20 +142,11 @@ connect_port(LV2_Handle instance,
 	}
 }
 
-// Works on little-endian machines only
-static inline bool 
-is_nan(float& value ) {
-    if (((*(uint32_t *) &value) & 0x7fffffff) > 0x7f800000) {
-      return true;
-    }
-    return false;
-}
-
 // Force already-denormal float value to zero
 static inline void 
-sanitize_denormal(float& value) {
-    if (is_nan(value)) {
-        value = 0.f;
+sanitize_denormal(float* value) {
+    if (fpclassify(*value) != FP_NORMAL) {
+        *value = 0.f;
     }
 }
 
@@ -209,13 +201,13 @@ peq(float G0, float G, float GB, float w0, float Dw,
         *a1 = -2.f*(1.f - W2) / (1.f + W2 + A);
         *a2 = (1 + W2 - A) / (1.f + W2 + A);
 
-        sanitize_denormal(*b1);
-        sanitize_denormal(*b2);
-        sanitize_denormal(*a0);
-        sanitize_denormal(*a1);
-        sanitize_denormal(*a2);
-        sanitize_denormal(*gn);
-        if (is_nan(*b0)) { *b0 = 1.f; }
+        sanitize_denormal(b1);
+        sanitize_denormal(b2);
+        sanitize_denormal(a0);
+        sanitize_denormal(a1);
+        sanitize_denormal(a2);
+        sanitize_denormal(gn);
+        if (isnan(*b0)) { *b0 = 1.f; }
 }
 
 static bool
@@ -324,23 +316,23 @@ run(LV2_Handle instance, uint32_t n_samples)
 	for (uint32_t pos = 0; pos < n_samples; pos++) {
 		float tmp,tmpl, tmph;
 		float in = input[pos];
-		sanitize_denormal(zameq2->x1);
-		sanitize_denormal(zameq2->x2);
-		sanitize_denormal(zameq2->y1);
-		sanitize_denormal(zameq2->y2);
-		sanitize_denormal(zameq2->x1a);
-		sanitize_denormal(zameq2->x2a);
-		sanitize_denormal(zameq2->y1a);
-		sanitize_denormal(zameq2->y2a);
-		sanitize_denormal(zameq2->zln1);
-		sanitize_denormal(zameq2->zln2);
-		sanitize_denormal(zameq2->zld1);
-		sanitize_denormal(zameq2->zld2);
-		sanitize_denormal(zameq2->zhn1);
-		sanitize_denormal(zameq2->zhn2);
-		sanitize_denormal(zameq2->zhd1);
-		sanitize_denormal(zameq2->zhd2);
-		sanitize_denormal(in);
+		sanitize_denormal(&zameq2->x1);
+		sanitize_denormal(&zameq2->x2);
+		sanitize_denormal(&zameq2->y1);
+		sanitize_denormal(&zameq2->y2);
+		sanitize_denormal(&zameq2->x1a);
+		sanitize_denormal(&zameq2->x2a);
+		sanitize_denormal(&zameq2->y1a);
+		sanitize_denormal(&zameq2->y2a);
+		sanitize_denormal(&zameq2->zln1);
+		sanitize_denormal(&zameq2->zln2);
+		sanitize_denormal(&zameq2->zld1);
+		sanitize_denormal(&zameq2->zld2);
+		sanitize_denormal(&zameq2->zhn1);
+		sanitize_denormal(&zameq2->zhn2);
+		sanitize_denormal(&zameq2->zhd1);
+		sanitize_denormal(&zameq2->zhd2);
+		sanitize_denormal(&in);
 
 		//lowshelf
 		tmpl = in * zameq2->Bl[0] + 

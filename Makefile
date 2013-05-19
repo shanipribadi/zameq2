@@ -10,7 +10,7 @@ OPTIMIZATIONS ?= -msse -msse2 -mfpmath=sse -ffast-math -fomit-frame-pointer -O3 
 
 LDFLAGS ?= -Wl,--as-needed
 CXXFLAGS ?= $(OPTIMIZATIONS) -Wall
-CFLAGS ?= $(OPTIMIZATIONS) -Wall
+CFLAGS ?= $(OPTIMIZATIONS) -Wall -std=gnu11
 
 ###############################################################################
 BUNDLE = zameq2.lv2
@@ -48,8 +48,8 @@ $(BUNDLE): manifest.ttl zameq2.ttl zameq2$(LIB_EXT)
 	cp manifest.ttl zameq2.ttl zameq2$(LIB_EXT) $(BUNDLE)
 
 zameq2$(LIB_EXT): zameq2.c
-	$(CXX) -o zameq2$(LIB_EXT) \
-		$(CXXFLAGS) \
+	$(CC) -o zameq2$(LIB_EXT) \
+		$(CFLAGS) \
 		zameq2.c \
 		$(LV2FLAGS) $(LDFLAGS)
 
